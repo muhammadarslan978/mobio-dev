@@ -6,7 +6,7 @@ import {
   Body,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { WebSignUpDto, MobileSignupDto } from './dto/user.dto';
+import { WebSignUpDto, MobileSignupDto, LoginDto } from './dto/user.dto';
 
 @ApiTags('users')
 @Controller('user')
@@ -34,6 +34,18 @@ export class UserController {
   @ApiResponse({ status: 400, description: 'Invalid input, object invalid.' })
   @UsePipes(new ValidationPipe())
   async mobileSignUp(@Body() body: MobileSignupDto): Promise<void> {
+    console.log(body);
+  }
+
+  @Post('/mobile/login')
+  @ApiOperation({ summary: 'Mobile user login' })
+  @ApiResponse({
+    status: 201,
+    description: 'This is login endpoint for mobile user',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input, object invalid.' })
+  @UsePipes(new ValidationPipe())
+  async mobileLogin(@Body() body: LoginDto): Promise<void> {
     console.log(body);
   }
 }

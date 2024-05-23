@@ -14,7 +14,7 @@ import {
   OnBoardingStatus,
   UserRole,
   UserStatus,
-} from '../../../constant/user.constant';
+} from '../../../constant/index';
 
 @Entity()
 export class User extends BaseEntity {

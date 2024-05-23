@@ -15,3 +15,7 @@ export enum OnBoardingStatus {
   Approved = 'Approved',
   Rejected = 'Rejected',
 }
+
+export enum REPOSITORY {
+  USER_REPOSITORY = 'USER_REPOSITORY',
+}
