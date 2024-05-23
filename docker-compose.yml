@@ -1,15 +1,28 @@
 version: '3.8'
 services:
-    postgres:
-        image: postgres:13
-        environment:
-            POSTGRES_USER: nestjs
-            POSTGRES_PASSWORD: nestjs
-            POSTGRES_DB: nestjs
-        ports:
-            - '5433:5432'
-        volumes:
-            - pgdata:/var/lib/postgresql/data
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: nestjs
+      POSTGRES_PASSWORD: nestjs
+      POSTGRES_DB: nestjs
+    ports:
+      - '5433:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - '5672:5672' # RabbitMQ main port
+      - '15672:15672' # RabbitMQ management UI port
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      NOTIFICATION_QUEUE: NOTIFICATION
+    volumes:
+      - rabbitmqdata:/var/lib/rabbitmq
 
 volumes:
-    pgdata:
+  pgdata:
+  rabbitmqdata:
