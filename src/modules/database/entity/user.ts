@@ -7,14 +7,15 @@ import {
   Index,
   CreateDateColumn,
   BaseEntity,
+  OneToOne,
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
-
 import {
   OnBoardingStatus,
   UserRole,
   UserStatus,
 } from '../../../constant/index';
+import { Company } from './company'; // Adjust the import path as necessary
 
 @Entity()
 export class User extends BaseEntity {
@@ -35,29 +36,29 @@ export class User extends BaseEntity {
   @Index({ unique: true })
   displayName: string;
 
-  @Column()
+  @Column({ nullable: true })
   fullName: string;
 
   @Column({ unique: true })
   @Index({ unique: true })
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
   address: string;
 
-  @Column()
+  @Column({ nullable: true })
   addressLineTwo: string;
 
-  @Column()
+  @Column({ nullable: true })
   postalCode: string;
 
-  @Column()
+  @Column({ nullable: true })
   city: string;
 
-  @Column()
+  @Column({ nullable: true })
   phoneNumber: string;
 
-  @Column()
+  @Column({ nullable: true })
   password: string;
 
   @Column({
@@ -66,20 +67,20 @@ export class User extends BaseEntity {
   })
   role: UserRole;
 
-  @Column()
+  @Column({ nullable: true })
   country: string;
 
   @Column({ default: 'Netherlands' })
   activeCountry: string;
 
-  @Column()
+  @Column({ nullable: true })
   activeCity: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: true })
   @Index({ unique: true })
   companyName: string;
 
-  @Column()
+  @Column({ nullable: true })
   domain: string;
 
   @Column({ default: false })
@@ -88,16 +89,16 @@ export class User extends BaseEntity {
   @Column({ default: false })
   block: boolean;
 
-  @Column()
+  @Column({ nullable: true })
   lastLogin: string;
 
-  @Column()
+  @Column({ nullable: true })
   lat: string;
 
-  @Column()
+  @Column({ nullable: true })
   lng: string;
 
-  @Column()
+  @Column({ nullable: true })
   location: string;
 
   @Column({
@@ -107,48 +108,52 @@ export class User extends BaseEntity {
   })
   status: UserStatus;
 
-  @Column()
+  @Column({ nullable: true })
   IBAN: string;
 
   @Column({
     type: 'enum',
     enum: OnBoardingStatus,
+    nullable: true,
   })
   onBoardingVerified: OnBoardingStatus;
 
-  @Column()
+  @Column({ nullable: true })
   passwordRestToken: string;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ type: 'timestamptz', nullable: true })
   passwordTokenExpire: Date;
 
   @Column({ default: true })
   online: boolean;
 
-  @CreateDateColumn({ type: 'timestamptz' })
+  @CreateDateColumn({ type: 'timestamptz', nullable: true })
   locationTimeStamp: Date;
 
-  @Column()
+  @Column({ nullable: true })
   pushToken: string;
+
+  @OneToOne(() => Company, (company) => company.user, { cascade: true })
+  company: Company;
 }
 
 export interface IUser {
   id?: string;
-  displayName: string;
-  fullName: string;
-  email: string;
-  address: string;
+  displayName?: string;
+  fullName?: string;
+  email?: string;
+  address?: string;
   addressLineTwo?: string;
-  postalCode: string;
-  city: string;
-  phoneNumber: string;
-  password: string;
-  role: UserRole;
-  country: string;
+  postalCode?: string;
+  city?: string;
+  phoneNumber?: string;
+  password?: string;
+  role?: UserRole;
+  country?: string;
   activeCountry?: string;
   activeCity?: string;
   companyName?: string;
-  domain: string;
+  domain?: string;
   verified?: boolean;
   block?: boolean;
   lastLogin?: string;
@@ -163,4 +168,5 @@ export interface IUser {
   online?: boolean;
   locationTimeStamp?: Date;
   pushToken?: string;
+  company?: Company; // Add company to the IUser interface
 }
