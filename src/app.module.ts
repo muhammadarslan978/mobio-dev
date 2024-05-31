@@ -1,11 +1,20 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './modules/database/database.module';
 import { UserModule } from './modules/user/user.module';
-import { RabbitMQModule } from './modules/rabit-mq/rabit-mq.module';
 import { UtilsService } from './modules/utils/utils.service';
+import { RabbitMqModule } from './modules/rabbit-mq/rabbit-mq.module';
 
 @Module({
-  imports: [DatabaseModule, UserModule, RabbitMQModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+
+    DatabaseModule,
+    UserModule,
+    RabbitMqModule,
+  ],
   controllers: [],
   providers: [UtilsService],
 })

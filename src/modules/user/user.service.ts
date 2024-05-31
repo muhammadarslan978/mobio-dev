@@ -6,6 +6,7 @@ import { IUser, User } from '../database/entity/user';
 import { MobileSignupDto, WebSignUpDto } from './dto/user.dto';
 import { UtilsService } from '../utils/utils.service';
 import { CompanyDetailsService } from './company-details/company-details.service';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class UserService {
@@ -13,6 +14,7 @@ export class UserService {
     @Inject(REPOSITORY.USER_REPOSITORY) private userRepo: Repository<User>,
     private readonly utilsService: UtilsService,
     private readonly companyDetailService: CompanyDetailsService,
+    @Inject('MOBIO_SERVICE') private rabbitClient: ClientProxy,
   ) {}
   async webSignup(data: WebSignUpDto): Promise<IUser> {
     try {
@@ -96,16 +98,16 @@ export class UserService {
       user.role = UserRole.Driver;
       // Notify driver
       user = await this.userRepo.save(user);
+
+      // Send notification message
+
       return user;
     } catch (err) {
       if (err instanceof HttpException) {
         throw err;
       }
       console.error(err);
-      throw new HttpException(
-        'Failed to create user due to internal server error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

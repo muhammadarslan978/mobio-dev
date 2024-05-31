@@ -1,22 +1,23 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
+import { RabbitMQService } from './rabbit-mq.service';
+
 @Module({
   imports: [
     ClientsModule.register([
       {
-        name: 'RABBITMQ_SERVICE',
+        name: 'rabbit-mq-module',
         transport: Transport.RMQ,
         options: {
-          urls: ['amqp://localhost:5672'], // Replace with your RabbitMQ server URL
-          queue: 'main_queue', // Replace with your queue name
-          queueOptions: {
-            durable: false,
-          },
+          urls: ['amqp://rabbitmq:rabbitmq@localhost:5672'],
+          queue: 'rabbit-mq-nest-js',
         },
       },
     ]),
   ],
-  exports: [ClientsModule],
+  controllers: [],
+  providers: [RabbitMQService],
+  exports: [RabbitMQService],
 })
 export class RabbitMQModule {}
