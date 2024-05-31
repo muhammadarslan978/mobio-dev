@@ -6,7 +6,7 @@ import { IUser, User } from '../database/entity/user';
 import { MobileSignupDto, WebSignUpDto } from './dto/user.dto';
 import { UtilsService } from '../utils/utils.service';
 import { CompanyDetailsService } from './company-details/company-details.service';
-import { ClientProxy } from '@nestjs/microservices';
+import { RabbitMqService } from '../rabbit-mq/rabbit-mq.service';
 
 @Injectable()
 export class UserService {
@@ -14,7 +14,7 @@ export class UserService {
     @Inject(REPOSITORY.USER_REPOSITORY) private userRepo: Repository<User>,
     private readonly utilsService: UtilsService,
     private readonly companyDetailService: CompanyDetailsService,
-    @Inject('MOBIO_SERVICE') private rabbitClient: ClientProxy,
+    private readonly rabbitMQService: RabbitMqService,
   ) {}
   async webSignup(data: WebSignUpDto): Promise<IUser> {
     try {
@@ -100,6 +100,9 @@ export class UserService {
       user = await this.userRepo.save(user);
 
       // Send notification message
+      this.rabbitMQService.send('rabbit-mq-producer', {
+        message: 'This is message come from poducer',
+      });
 
       return user;
     } catch (err) {

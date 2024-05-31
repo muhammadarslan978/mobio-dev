@@ -1,8 +1,8 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
-export class RabbitMQService {
+export class RabbitMqService {
   constructor(
     @Inject('rabbit-mq-module') private readonly client: ClientProxy,
   ) {}
