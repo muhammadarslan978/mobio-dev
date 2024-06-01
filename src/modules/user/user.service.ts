@@ -122,7 +122,7 @@ export class UserService {
       };
 
       // Send notification message
-      await this.rabbitMQService.send('rabbit-mq-producer', event);
+      this.rabbitMQService.send('rabbit-mq-producer', event);
 
       return user;
     } catch (err) {
@@ -134,33 +134,27 @@ export class UserService {
     }
   }
 
-  async verify(token: string, res: Response): Promise<void> {
+  async verify(token: string): Promise<any> {
     try {
       const decoded = await this.authService.verifyToken(token);
       const user = await this.userRepo.findOne({
         where: { id: decoded.id, verified: false },
       });
 
-      if (user) {
-        user.verified = true;
-        await this.userRepo.save(user);
-        return res.sendFile(
-          path.join(__dirname, '..', '..', 'public', 'success.html'),
-        );
+      if (!user) {
+        throw new HttpException('User not foud', HttpStatus.NOT_FOUND);
       }
 
-      return res.sendFile(
-        path.join(__dirname, '..', '..', 'public', 'error.html'),
-      );
+      user.verified = true;
+      await this.userRepo.save(user);
+
+      return { messge: 'User verified' };
     } catch (err) {
-      if (err.message === 'Token expired') {
-        return res.render('pages/resend', {
-          jwt: `${process.env.URL}/api/user/resend/${token}`,
-        });
+      if (err instanceof HttpException) {
+        throw err;
       }
-      return res.sendFile(
-        path.join(__dirname, '..', '..', 'public', 'general-error.html'),
-      );
+      console.error(err); // Log the error for debugging purposes.
+      throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

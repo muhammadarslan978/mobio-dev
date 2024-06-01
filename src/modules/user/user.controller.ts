@@ -6,14 +6,11 @@ import {
   Body,
   Get,
   Param,
-  Res,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { WebSignUpDto, MobileSignupDto } from './dto/user.dto';
 import { UserService } from './user.service';
 import { IUser } from '../database/entity/user';
-import path from 'path';
-import { Response } from 'express';
 
 @ApiTags('users')
 @Controller('user')
@@ -52,17 +49,8 @@ export class UserController {
   })
   @ApiResponse({ status: 400, description: 'Invalid input' })
   @UsePipes(new ValidationPipe())
-  async verify(
-    @Param('JWT') token: string,
-    @Res() res: Response,
-  ): Promise<void> {
-    try {
-      await this.userService.verify(token, res);
-    } catch (error) {
-      res.sendFile(
-        path.join(__dirname, '..', '..', 'public', 'general-error.html'),
-      );
-    }
+  async verify(@Param('JWT') token: string): Promise<any> {
+    return await this.userService.verify(token);
   }
 
   // @Get('/resend/:JWT')
