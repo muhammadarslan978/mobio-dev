@@ -5,9 +5,10 @@ import { DatabaseModule } from '../database/database.module';
 import { UtilsService } from '../utils/utils.service';
 import { CompanyDetailsService } from './company-details/company-details.service';
 import { RabbitMqModule } from '../rabbit-mq/rabbit-mq.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [DatabaseModule, RabbitMqModule],
+  imports: [DatabaseModule, RabbitMqModule, AuthModule],
   controllers: [UserController],
   providers: [UserService, UtilsService, CompanyDetailsService],
 })

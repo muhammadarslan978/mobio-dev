@@ -6,11 +6,14 @@ import {
   Body,
   Get,
   Param,
+  Res,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { WebSignUpDto, MobileSignupDto } from './dto/user.dto';
 import { UserService } from './user.service';
 import { IUser } from '../database/entity/user';
+import path from 'path';
+import { Response } from 'express';
 
 @ApiTags('users')
 @Controller('user')
@@ -49,30 +52,33 @@ export class UserController {
   })
   @ApiResponse({ status: 400, description: 'Invalid input' })
   @UsePipes(new ValidationPipe())
-  async verify(@Param('JWT') token: string): Promise<string> {
+  async verify(
+    @Param('JWT') token: string,
+    @Res() res: Response,
+  ): Promise<void> {
     try {
-      console.log(token);
-      return 'Verified';
+      await this.userService.verify(token, res);
     } catch (error) {
-      throw new Error('Invalid input');
+      res.sendFile(
+        path.join(__dirname, '..', '..', 'public', 'general-error.html'),
+      );
     }
   }
 
-  @Get('/resend/:JWT')
-  @ApiOperation({ summary: 'Mobio resend verification api' })
-  @ApiResponse({
-    status: 200,
-    description:
-      'Verification link send to your email please verify your account',
-  })
-  @ApiResponse({ status: 400, description: 'Invalid input' })
-  @UsePipes(new ValidationPipe())
-  async resend(@Param('JWT') token: string): Promise<string> {
-    try {
-      console.log(token);
-      return 'Verification link send to your email please verify your account';
-    } catch (error) {
-      throw new Error('Invalid input');
-    }
-  }
+  // @Get('/resend/:JWT')
+  // @ApiOperation({ summary: 'Mobio resend verification api' })
+  // @ApiResponse({
+  //   status: 200,
+  //   description:
+  //     'Verification link send to your email please verify your account',
+  // })
+  // @ApiResponse({ status: 400, description: 'Invalid input' })
+  // @UsePipes(new ValidationPipe())
+  // async resend(@Param('JWT') token: string): Promise<string> {
+  //   try {
+  //     // return this.userService.resend(token);
+  //   } catch (error) {
+  //     throw new Error('Invalid input');
+  //   }
+  // }
 }

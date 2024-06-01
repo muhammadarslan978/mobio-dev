@@ -1,12 +1,21 @@
 import { Inject, Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Response } from 'express';
+import path from 'path';
 
-import { REPOSITORY, UserRole } from '../../constant/index';
+import {
+  EVENT_ENUM,
+  QUEUE_EVENT,
+  REPOSITORY,
+  SUB_TYPE,
+  UserRole,
+} from '../../constant/index';
 import { Repository } from 'typeorm';
 import { IUser, User } from '../database/entity/user';
 import { MobileSignupDto, WebSignUpDto } from './dto/user.dto';
 import { UtilsService } from '../utils/utils.service';
 import { CompanyDetailsService } from './company-details/company-details.service';
 import { RabbitMqService } from '../rabbit-mq/rabbit-mq.service';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class UserService {
@@ -15,6 +24,7 @@ export class UserService {
     private readonly utilsService: UtilsService,
     private readonly companyDetailService: CompanyDetailsService,
     private readonly rabbitMQService: RabbitMqService,
+    private readonly authService: AuthService,
   ) {}
   async webSignup(data: WebSignUpDto): Promise<IUser> {
     try {
@@ -64,6 +74,8 @@ export class UserService {
 
       await this.companyDetailService.saveCompanyDetails({ user_id: user.id });
 
+      // send email
+
       return user;
     } catch (err) {
       if (err instanceof HttpException) {
@@ -96,13 +108,21 @@ export class UserService {
       let user = new User();
       Object.assign(user, data);
       user.role = UserRole.Driver;
-      // Notify driver
       user = await this.userRepo.save(user);
 
+      const event: QUEUE_EVENT = {
+        type: EVENT_ENUM.EMAIL,
+        sub_type: SUB_TYPE.SIGNUP,
+        data: {
+          fullName: user.fullName,
+          displayName: user.displayName,
+          email: user.email,
+          token: await this.authService.generateToken({ id: user.id }),
+        },
+      };
+
       // Send notification message
-      this.rabbitMQService.send('rabbit-mq-producer', {
-        message: 'This is message come from poducer',
-      });
+      await this.rabbitMQService.send('rabbit-mq-producer', event);
 
       return user;
     } catch (err) {
@@ -113,4 +133,46 @@ export class UserService {
       throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  async verify(token: string, res: Response): Promise<void> {
+    try {
+      const decoded = await this.authService.verifyToken(token);
+      const user = await this.userRepo.findOne({
+        where: { id: decoded.id, verified: false },
+      });
+
+      if (user) {
+        user.verified = true;
+        await this.userRepo.save(user);
+        return res.sendFile(
+          path.join(__dirname, '..', '..', 'public', 'success.html'),
+        );
+      }
+
+      return res.sendFile(
+        path.join(__dirname, '..', '..', 'public', 'error.html'),
+      );
+    } catch (err) {
+      if (err.message === 'Token expired') {
+        return res.render('pages/resend', {
+          jwt: `${process.env.URL}/api/user/resend/${token}`,
+        });
+      }
+      return res.sendFile(
+        path.join(__dirname, '..', '..', 'public', 'general-error.html'),
+      );
+    }
+  }
+
+  // async resend(token: string): Promise<string> {
+  //   try {
+  //     return 'msg';
+  //   } catch (err) {
+  //     if (err instanceof HttpException) {
+  //       throw err;
+  //     }
+  //     console.error(err);
+  //     throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
+  //   }
+  // }
 }
