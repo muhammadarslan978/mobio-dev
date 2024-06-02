@@ -218,7 +218,36 @@ export class MobileSignupDto {
   activeCountry?: string;
 }
 
-export class LoginDto {
+export class MobileLoginDto {
+  @ApiProperty({
+    description: 'The email of the user',
+    example: 'john.doe@example.com',
+  })
+  @IsString()
+  @IsNotEmpty()
+  displayName: string;
+
+  @ApiProperty({
+    description: 'The password of the user',
+    minimum: 8,
+    example: 'password123',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8)
+  password: string;
+
+  @ApiProperty({
+    description: 'The last login time of the user',
+    example: '2023-12-31T23:59:59Z',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  lastLogin?: string;
+}
+
+export class WebLoginDto {
   @ApiProperty({
     description: 'The display name of the user',
     example: 'john_doe',
@@ -229,15 +258,17 @@ export class LoginDto {
 
   @ApiProperty({
     description: 'The password of the user',
+    minimum: 8,
     example: 'password123',
   })
   @IsString()
   @IsNotEmpty()
+  @MinLength(8)
   password: string;
 
   @ApiProperty({
     description: 'The last login time of the user',
-    example: '2024-05-23T08:30:00Z',
+    example: '2023-12-31T23:59:59Z',
     required: false,
   })
   @IsString()

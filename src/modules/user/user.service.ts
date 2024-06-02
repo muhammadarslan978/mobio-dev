@@ -1,6 +1,4 @@
 import { Inject, Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { Response } from 'express';
-import path from 'path';
 
 import {
   EVENT_ENUM,
@@ -11,11 +9,17 @@ import {
 } from '../../constant/index';
 import { Repository } from 'typeorm';
 import { IUser, User } from '../database/entity/user';
-import { MobileSignupDto, WebSignUpDto } from './dto/user.dto';
+import {
+  MobileLoginDto,
+  MobileSignupDto,
+  WebLoginDto,
+  WebSignUpDto,
+} from './dto/user.dto';
 import { UtilsService } from '../utils/utils.service';
 import { CompanyDetailsService } from './company-details/company-details.service';
 import { RabbitMqService } from '../rabbit-mq/rabbit-mq.service';
 import { AuthService } from '../auth/auth.service';
+import { LoginResponse } from './interface';
 
 @Injectable()
 export class UserService {
@@ -75,6 +79,20 @@ export class UserService {
       await this.companyDetailService.saveCompanyDetails({ user_id: user.id });
 
       // send email
+
+      const event: QUEUE_EVENT = {
+        type: EVENT_ENUM.EMAIL,
+        sub_type: SUB_TYPE.SIGNUP,
+        data: {
+          fullName: user.companyName,
+          displayName: user.displayName,
+          email: user.email,
+          token: await this.authService.generateToken({ id: user.id }),
+        },
+      };
+
+      // Send notification message
+      this.rabbitMQService.send('rabbit-mq-producer', event);
 
       return user;
     } catch (err) {
@@ -158,15 +176,204 @@ export class UserService {
     }
   }
 
-  // async resend(token: string): Promise<string> {
-  //   try {
-  //     return 'msg';
-  //   } catch (err) {
-  //     if (err instanceof HttpException) {
-  //       throw err;
-  //     }
-  //     console.error(err);
-  //     throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
-  //   }
-  // }
+  async resend(token: string): Promise<string> {
+    try {
+      const decoded = await this.authService.verifyToken(token);
+      const user = await this.userRepo.findOne({
+        where: { id: decoded.id },
+      });
+
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (user.verified) {
+        throw new HttpException(
+          'User already verified',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const newToken = await this.authService.generateToken({ id: user.id });
+
+      const event: QUEUE_EVENT = {
+        type: EVENT_ENUM.EMAIL,
+        sub_type: SUB_TYPE.RESEND_VERIFICATION,
+        data: {
+          fullName: user.fullName ? user.fullName : user.companyName,
+          displayName: user.displayName,
+          email: user.email,
+          token: newToken,
+        },
+      };
+
+      // Send notification message
+      this.rabbitMQService.send('rabbit-mq-producer', event);
+
+      return 'Verification email resent successfully';
+    } catch (err) {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      console.error(err); // Log the error for debugging purposes.
+      throw new HttpException(
+        'Failed to resend verification email due to internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async mobileLogin(data: MobileLoginDto): Promise<LoginResponse> {
+    try {
+      const { displayName, password } = data;
+      const user = await this.userRepo.findOne({
+        where: [{ displayName }, { email: displayName }],
+        select: [
+          'id',
+          'displayName',
+          'email',
+          'password',
+          'role',
+          'verified',
+          'onBoardingVerified',
+          'lastLogin',
+        ],
+      });
+
+      if (!user) {
+        throw new HttpException(
+          'Invalid username or password.',
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      if (user.role === UserRole.Admin || user.role === UserRole.Organization) {
+        throw new HttpException(
+          'Admin or Company not able to log in to the mobile app.',
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      if (!user.verified) {
+        throw new HttpException(
+          "Your account isn't verified yet. Please verify your account.",
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      const passwordMatch = await this.authService.comparePasswords(
+        password,
+        user.password,
+      );
+      if (!passwordMatch) {
+        throw new HttpException(
+          'Invalid username or password.',
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      // const onboarding = await this.onboardingRepo.findOne({ where: { userId: user.id } });
+
+      if (
+        user.onBoardingVerified === 'Approved' ||
+        user.onBoardingVerified === 'Pending' ||
+        !user.onBoardingVerified ||
+        user.onBoardingVerified === 'Rejected'
+      ) {
+        const payload = {
+          id: user.id,
+          displayName: user.displayName,
+          email: user.email,
+          role: user.role,
+        };
+        const token = await this.authService.generateToken(payload);
+
+        return {
+          user: { ...user, password: undefined },
+          // onboarding,
+          token,
+        };
+      }
+
+      throw new HttpException(
+        'Invalid username or password.',
+        HttpStatus.CONFLICT,
+      );
+    } catch (err) {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new HttpException(
+        'Internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async webLogin(data: WebLoginDto): Promise<LoginResponse> {
+    try {
+      const { displayName, password } = data;
+      const user = await this.userRepo.findOne({
+        where: [{ displayName }, { email: displayName }],
+        select: [
+          'id',
+          'displayName',
+          'email',
+          'password',
+          'role',
+          'verified',
+          'lastLogin',
+        ],
+      });
+
+      if (
+        !user ||
+        (user.role !== UserRole.Admin && user.role !== UserRole.Organization)
+      ) {
+        throw new HttpException(
+          'Invalid username or password.',
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      if (!user.verified) {
+        throw new HttpException(
+          "Your account isn't verified yet. Please verify your account.",
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      const passwordMatch = await this.authService.comparePasswords(
+        password,
+        user.password,
+      );
+      if (!passwordMatch) {
+        throw new HttpException(
+          'Invalid username or password.',
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      const payload = {
+        id: user.id,
+        displayName: user.displayName,
+        email: user.email,
+        role: user.role,
+      };
+      const token = await this.authService.generateToken(payload);
+
+      return {
+        user: { ...user, password: undefined },
+        token,
+      };
+    } catch (err) {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new HttpException(
+        'Internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }

@@ -35,6 +35,7 @@ export enum EVENT_ENUM {
 export enum SUB_TYPE {
   SIGNUP = 'SIGNUP',
   RESEND = 'RESEND',
+  RESEND_VERIFICATION = 'RESEND_VERIFICATION',
 }
 
 export type QUEUE_EVENT = {

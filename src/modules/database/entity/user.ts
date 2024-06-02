@@ -89,8 +89,8 @@ export class User extends BaseEntity {
   @Column({ default: false })
   block: boolean;
 
-  @Column({ nullable: true })
-  lastLogin: string;
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  lastLogin: Date;
 
   @Column({ nullable: true })
   lat: string;
@@ -156,7 +156,7 @@ export interface IUser {
   domain?: string;
   verified?: boolean;
   block?: boolean;
-  lastLogin?: string;
+  lastLogin: Date;
   lat?: string;
   lng?: string;
   location?: string;

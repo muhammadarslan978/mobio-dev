@@ -8,7 +8,12 @@ import {
   Param,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { WebSignUpDto, MobileSignupDto } from './dto/user.dto';
+import {
+  WebSignUpDto,
+  MobileSignupDto,
+  MobileLoginDto,
+  WebLoginDto,
+} from './dto/user.dto';
 import { UserService } from './user.service';
 import { IUser } from '../database/entity/user';
 
@@ -50,23 +55,47 @@ export class UserController {
   @ApiResponse({ status: 400, description: 'Invalid input' })
   @UsePipes(new ValidationPipe())
   async verify(@Param('JWT') token: string): Promise<any> {
-    return await this.userService.verify(token);
+    return this.userService.verify(token);
   }
 
-  // @Get('/resend/:JWT')
-  // @ApiOperation({ summary: 'Mobio resend verification api' })
-  // @ApiResponse({
-  //   status: 200,
-  //   description:
-  //     'Verification link send to your email please verify your account',
-  // })
-  // @ApiResponse({ status: 400, description: 'Invalid input' })
-  // @UsePipes(new ValidationPipe())
-  // async resend(@Param('JWT') token: string): Promise<string> {
-  //   try {
-  //     // return this.userService.resend(token);
-  //   } catch (error) {
-  //     throw new Error('Invalid input');
-  //   }
-  // }
+  @Get('/resend/:JWT')
+  @ApiOperation({ summary: 'Mobio resend verification api' })
+  @ApiResponse({
+    status: 200,
+    description:
+      'Verification link send to your email please verify your account',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input' })
+  @UsePipes(new ValidationPipe())
+  async resend(@Param('JWT') token: string): Promise<string> {
+    try {
+      return this.userService.resend(token);
+    } catch (error) {
+      throw new Error('Invalid input');
+    }
+  }
+
+  @Post('/mobile/login')
+  @ApiOperation({ summary: 'Mobile user Login' })
+  @ApiResponse({
+    status: 201,
+    description: 'The user has been successfully login',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input, object invalid.' })
+  @UsePipes(new ValidationPipe())
+  async mobileLogin(@Body() body: MobileLoginDto): Promise<any> {
+    return this.userService.mobileLogin(body);
+  }
+
+  @Post('/web/login')
+  @ApiOperation({ summary: 'Web user Login' })
+  @ApiResponse({
+    status: 201,
+    description: 'The user has been successfully login',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input, object invalid.' })
+  @UsePipes(new ValidationPipe())
+  async webLogin(@Body() body: WebLoginDto): Promise<any> {
+    return this.userService.webLogin(body);
+  }
 }
