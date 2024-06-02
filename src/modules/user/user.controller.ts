@@ -16,6 +16,7 @@ import {
 } from './dto/user.dto';
 import { UserService } from './user.service';
 import { IUser } from '../database/entity/user';
+import { OnboardingDto } from './dto/onbording.dto';
 
 @ApiTags('users')
 @Controller('user')
@@ -97,5 +98,17 @@ export class UserController {
   @UsePipes(new ValidationPipe())
   async webLogin(@Body() body: WebLoginDto): Promise<any> {
     return this.userService.webLogin(body);
+  }
+
+  @Post('/onboarding')
+  @ApiOperation({ summary: 'Add onbording for driver' })
+  @ApiResponse({
+    status: 201,
+    description: 'User has successfully added onbording',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input, object invalid.' })
+  @UsePipes(new ValidationPipe())
+  async userOnBording(@Body() body: OnboardingDto): Promise<any> {
+    return this.userService.addOnBording(body);
   }
 }

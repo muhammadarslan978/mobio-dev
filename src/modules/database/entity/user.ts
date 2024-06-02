@@ -16,6 +16,7 @@ import {
   UserStatus,
 } from '../../../constant/index';
 import { Company } from './company'; // Adjust the import path as necessary
+import { OnBoarding } from './onBording';
 
 @Entity()
 export class User extends BaseEntity {
@@ -135,6 +136,9 @@ export class User extends BaseEntity {
 
   @OneToOne(() => Company, (company) => company.user, { cascade: true })
   company: Company;
+
+  @OneToOne(() => OnBoarding, (x) => x.user, { cascade: true })
+  onBordings: OnBoarding;
 }
 
 export interface IUser {

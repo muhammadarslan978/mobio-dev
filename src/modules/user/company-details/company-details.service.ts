@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Company } from '../../database/entity/company';
-import { REPOSITORY } from 'src/constant';
+import { REPOSITORY } from '../../../constant/index';
 
 @Injectable()
 export class CompanyDetailsService {

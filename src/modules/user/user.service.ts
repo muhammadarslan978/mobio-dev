@@ -20,6 +20,7 @@ import { CompanyDetailsService } from './company-details/company-details.service
 import { RabbitMqService } from '../rabbit-mq/rabbit-mq.service';
 import { AuthService } from '../auth/auth.service';
 import { LoginResponse } from './interface';
+import { OnboardingDto } from './dto/onbording.dto';
 
 @Injectable()
 export class UserService {
@@ -366,6 +367,19 @@ export class UserService {
         user: { ...user, password: undefined },
         token,
       };
+    } catch (err) {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new HttpException(
+        'Internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async addOnBording(data: OnboardingDto): Promise<any> {
+    try {
     } catch (err) {
       if (err instanceof HttpException) {
         throw err;
