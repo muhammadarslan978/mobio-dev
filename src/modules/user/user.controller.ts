@@ -126,6 +126,6 @@ export class UserController {
     @Req() req: any,
     @Body() body: OnboardingDto,
   ): Promise<any> {
-    return { user: req.user };
+    return this.userService.addOnBording(body, req.user.id);
   }
 }

@@ -29,14 +29,14 @@ export class OnBoarding extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   numberPlate: string;
 
-  @Column({ type: 'date', nullable: true })
-  insuranceExpiry: Date;
+  @Column({ nullable: true })
+  insuranceExpiry: string;
 
   @Column({ type: 'varchar', nullable: true })
   insuranceImage: string;
 
-  @Column({ type: 'date', nullable: true })
-  licenseExpiry: Date;
+  @Column({ nullable: true })
+  licenseExpiry: string;
 
   @Column({ type: 'varchar', nullable: true })
   licenseFront: string;
@@ -44,8 +44,8 @@ export class OnBoarding extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   licenseBack: string;
 
-  @Column({ type: 'date', nullable: true })
-  vehicleCardExpiry: Date;
+  @Column({ nullable: true })
+  vehicleCardExpiry: string;
 
   @Column({ type: 'varchar', nullable: true })
   vehicleCardFront: string;
@@ -73,22 +73,22 @@ export class OnBoarding extends BaseEntity {
   isCurrent: boolean;
 
   @ManyToOne(() => User, (user) => user.onBordings)
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn({ name: 'userId' })
   user: User;
 
   @Column({ type: 'uuid', nullable: true })
-  user_id: string;
+  userId: string;
 }
 
 export interface IOnBoarding {
   id?: string;
   numberPlate?: string;
-  insuranceExpiry?: Date;
+  insuranceExpiry?: string;
   insuranceImage?: string;
-  licenseExpiry?: Date;
+  licenseExpiry?: string;
   licenseFront?: string;
   licenseBack?: string;
-  vehicleCardExpiry?: Date;
+  vehicleCardExpiry?: string;
   vehicleCardFront?: string;
   vehicleCardBack?: string;
   pictureFront?: string;

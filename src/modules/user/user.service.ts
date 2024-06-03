@@ -2,6 +2,7 @@ import { Inject, Injectable, HttpException, HttpStatus } from '@nestjs/common';
 
 import {
   EVENT_ENUM,
+  OnBoardingStatus,
   QUEUE_EVENT,
   REPOSITORY,
   SUB_TYPE,
@@ -21,6 +22,7 @@ import { RabbitMqService } from '../rabbit-mq/rabbit-mq.service';
 import { AuthService } from '../auth/auth.service';
 import { LoginResponse } from './interface';
 import { OnboardingDto } from './dto/onbording.dto';
+import { OnbordingService } from './onbording/onbording.service';
 
 @Injectable()
 export class UserService {
@@ -30,6 +32,7 @@ export class UserService {
     private readonly companyDetailService: CompanyDetailsService,
     private readonly rabbitMQService: RabbitMqService,
     private readonly authService: AuthService,
+    private readonly onbordingService: OnbordingService,
   ) {}
   async webSignup(data: WebSignUpDto): Promise<IUser> {
     try {
@@ -379,8 +382,20 @@ export class UserService {
     }
   }
 
-  async addOnBording(data: OnboardingDto): Promise<any> {
+  async addOnBording(data: OnboardingDto, userId: string): Promise<any> {
     try {
+      const user = await this.userRepo.findOne({
+        where: { id: userId },
+        select: { password: false },
+      });
+
+      if (!user) {
+        throw new HttpException('User not found.', HttpStatus.CONFLICT);
+      }
+      await this.onbordingService.addOnBording(data, userId);
+      user.onBoardingVerified = OnBoardingStatus.Pending;
+      await this.userRepo.save(user);
+      return { message: 'Onbording need approval' };
     } catch (err) {
       if (err instanceof HttpException) {
         throw err;

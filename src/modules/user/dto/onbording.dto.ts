@@ -1,132 +1,142 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsUUID, ValidateNested, IsNotEmpty } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class InsuranceDocumentDto {
+  @ApiProperty({
+    description: 'Expiry date of the insurance document',
+    example: '2023-12-31',
+  })
+  @IsString()
+  @IsNotEmpty()
+  expiry: string;
+
+  @ApiProperty({
+    description: 'Image URL of the insurance document',
+    example: 'http://example.com/image.jpg',
+  })
+  @IsString()
+  @IsNotEmpty()
+  image: string;
+}
+
+class LicenseCardDto {
+  @ApiProperty({
+    description: 'Expiry date of the license card',
+    example: '2023-12-31',
+  })
+  @IsString()
+  @IsNotEmpty()
+  expiry: string;
+
+  @ApiProperty({
+    description: 'Front image URL of the license card',
+    example: 'http://example.com/front.jpg',
+  })
+  @IsString()
+  @IsNotEmpty()
+  frontImage: string;
+
+  @ApiProperty({
+    description: 'Back image URL of the license card',
+    example: 'http://example.com/back.jpg',
+  })
+  @IsString()
+  @IsNotEmpty()
+  backImage: string;
+}
+
+class VehicleCardDto {
+  @ApiProperty({
+    description: 'Expiry date of the vehicle card',
+    example: '2023-12-31',
+  })
+  @IsString()
+  @IsNotEmpty()
+  expiry: string;
+
+  @ApiProperty({
+    description: 'Front image URL of the vehicle card',
+    example: 'http://example.com/front.jpg',
+  })
+  @IsString()
+  @IsNotEmpty()
+  frontImage: string;
+
+  @ApiProperty({
+    description: 'Back image URL of the vehicle card',
+    example: 'http://example.com/back.jpg',
+  })
+  @IsString()
+  @IsNotEmpty()
+  backImage: string;
+}
+
+class PicturesDto {
+  @ApiProperty({
+    description: 'Front image URL of the car',
+    example: 'http://example.com/front.jpg',
+  })
+  @IsString()
+  @IsNotEmpty()
+  frontImage: string;
+
+  @ApiProperty({
+    description: 'Back image URL of the car',
+    example: 'http://example.com/back.jpg',
+  })
+  @IsString()
+  @IsNotEmpty()
+  backImage: string;
+
+  @ApiProperty({
+    description: 'Side image URL of the car',
+    example: 'http://example.com/side.jpg',
+  })
+  @IsString()
+  @IsNotEmpty()
+  sideImage: string;
+}
 
 export class OnboardingDto {
   @ApiProperty({
-    description: 'The insurance expiry date of the user',
-    example: '2024-06-30',
+    description: 'ID of the car',
+    example: '123e4567-e89b-12d3-a456-426614174000',
   })
-  @IsString()
-  @IsNotEmpty()
-  insuranceExpiry: string;
-
-  @ApiProperty({
-    description: 'The URL of the insurance image',
-    example: 'https://example.com/insurance-image.jpg',
-  })
-  @IsString()
-  @IsNotEmpty()
-  insuranceImage: string;
-
-  @ApiProperty({
-    description: 'The license expiry date of the user',
-    example: '2024-07-15',
-  })
-  @IsString()
-  @IsNotEmpty()
-  licenseExpiry: string;
-
-  @ApiProperty({
-    description: 'The URL of the front side of the license image',
-    example: 'https://example.com/license-front.jpg',
-  })
-  @IsString()
-  @IsNotEmpty()
-  licenseFront: string;
-
-  @ApiProperty({
-    description: 'The URL of the back side of the license image',
-    example: 'https://example.com/license-back.jpg',
-  })
-  @IsString()
-  @IsNotEmpty()
-  licenseBack: string;
-
-  @ApiProperty({
-    description: 'The vehicle card expiry date of the user',
-    example: '2024-07-20',
-  })
-  @IsString()
-  @IsNotEmpty()
-  vehicleCardExpiry: string;
-
-  @ApiProperty({
-    description: 'The URL of the front side of the vehicle card image',
-    example: 'https://example.com/vehicle-card-front.jpg',
-  })
-  @IsString()
-  @IsNotEmpty()
-  vehicleCardFront: string;
-
-  @ApiProperty({
-    description: 'The URL of the back side of the vehicle card image',
-    example: 'https://example.com/vehicle-card-back.jpg',
-  })
-  @IsString()
-  @IsNotEmpty()
-  vehicleCardBack: string;
-
-  @ApiProperty({
-    description: 'The URL of the front side of the user picture',
-    example: 'https://example.com/picture-front.jpg',
-  })
-  @IsString()
-  @IsNotEmpty()
-  pictureFront: string;
-
-  @ApiProperty({
-    description: 'The URL of the back side of the user picture',
-    example: 'https://example.com/picture-back.jpg',
-  })
-  @IsString()
-  @IsNotEmpty()
-  pictureBack: string;
-
-  @ApiProperty({
-    description: 'The URL of the side view of the user picture',
-    example: 'https://example.com/picture-side.jpg',
-  })
-  @IsString()
-  @IsNotEmpty()
-  pictureSide: string;
-
-  @ApiProperty({
-    description: 'The number plate of the vehicle',
-    example: 'AB1234CD',
-  })
-  @IsString()
-  @IsNotEmpty()
-  numberPlate: string;
-
-  @ApiProperty({
-    description: 'The ID of the car',
-    example: 'abc123',
-  })
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
   carId: string;
 
   @ApiProperty({
-    description: 'The ID of the car brand',
-    example: 'xyz456',
+    description: 'ID of the brand',
+    example: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
   })
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
   brandId: string;
 
-  @ApiProperty({
-    description: 'The verification status of the onboarding process',
-    enum: ['Approved', 'Rejected', 'Pending'],
-    default: 'Pending',
-  })
+  @ApiProperty({ description: 'Number plate of the car', example: 'AB-123-CD' })
   @IsString()
   @IsNotEmpty()
-  verify: 'Approved' | 'Rejected' | 'Pending';
+  numberPlate: string;
 
-  @ApiProperty({
-    description: 'Flag indicating if this is the current onboarding process',
-    example: true,
-  })
-  @IsOptional()
-  isCurrent?: boolean;
+  @ApiProperty({ description: 'Insurance document details' })
+  @ValidateNested()
+  @Type(() => InsuranceDocumentDto)
+  insuranceDocument: InsuranceDocumentDto;
+
+  @ApiProperty({ description: 'License card details', required: false })
+  @ValidateNested()
+  @Type(() => LicenseCardDto)
+  licenseCard?: LicenseCardDto;
+
+  @ApiProperty({ description: 'Vehicle card details' })
+  @ValidateNested()
+  @Type(() => VehicleCardDto)
+  vehicleCard: VehicleCardDto;
+
+  @ApiProperty({ description: 'Pictures of the car' })
+  @ValidateNested()
+  @Type(() => PicturesDto)
+  pictures: PicturesDto;
 }
