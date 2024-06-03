@@ -286,6 +286,7 @@ export class UserService {
           displayName: user.displayName,
           email: user.email,
           role: user.role,
+          verified: user.verified,
         };
         const token = await this.authService.generateToken(payload);
 

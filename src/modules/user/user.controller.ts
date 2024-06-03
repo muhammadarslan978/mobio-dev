@@ -6,8 +6,15 @@ import {
   Body,
   Get,
   Param,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import {
   WebSignUpDto,
   MobileSignupDto,
@@ -17,6 +24,10 @@ import {
 import { UserService } from './user.service';
 import { IUser } from '../database/entity/user';
 import { OnboardingDto } from './dto/onbording.dto';
+import { Roles } from '../auth/roles.decorator';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { UserRole } from 'src/constant';
 
 @ApiTags('users')
 @Controller('user')
@@ -100,15 +111,21 @@ export class UserController {
     return this.userService.webLogin(body);
   }
 
-  @Post('/onboarding')
-  @ApiOperation({ summary: 'Add onbording for driver' })
+  @Post('/onbording')
+  @ApiOperation({ summary: 'Add onboarding for driver' })
   @ApiResponse({
     status: 201,
-    description: 'User has successfully added onbording',
+    description: 'User has successfully added onboarding',
   })
   @ApiResponse({ status: 400, description: 'Invalid input, object invalid.' })
+  @ApiBearerAuth('access-token') // Use the security scheme name defined in DocumentBuilder
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.Driver, UserRole.Dispatcher)
   @UsePipes(new ValidationPipe())
-  async userOnBording(@Body() body: OnboardingDto): Promise<any> {
-    return this.userService.addOnBording(body);
+  async userOnboarding(
+    @Req() req: any,
+    @Body() body: OnboardingDto,
+  ): Promise<any> {
+    return { user: req.user };
   }
 }

@@ -3,6 +3,7 @@ import { DataSource, Repository } from 'typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import { User } from '../entity/user';
 import { Company } from '../entity/company';
+import { OnBoarding } from '../entity/onBording';
 
 export const databaseProviders = [
   {
@@ -47,6 +48,13 @@ export const databaseProviders = [
     provide: REPOSITORY.COMPAY_REPOSITORY,
     useFactory: (dataSource: DataSource): Repository<Company> => {
       return dataSource.getRepository(Company);
+    },
+    inject: [INJECTION_TOKEN.DATA_SOURCE],
+  },
+  {
+    provide: REPOSITORY.ONBORDING_REPOSITORY,
+    useFactory: (dataSource: DataSource): Repository<OnBoarding> => {
+      return dataSource.getRepository(OnBoarding);
     },
     inject: [INJECTION_TOKEN.DATA_SOURCE],
   },
