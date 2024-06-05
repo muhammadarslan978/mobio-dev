@@ -8,6 +8,7 @@ import {
   Param,
   UseGuards,
   Req,
+  Put,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -23,11 +24,13 @@ import {
 } from './dto/user.dto';
 import { UserService } from './user.service';
 import { IUser } from '../database/entity/user';
-import { OnboardingDto } from './dto/onbording.dto';
+import { OnboardingDto, UpdateOnboardingDto } from './dto/onbording.dto';
 import { Roles } from '../auth/roles.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { UserRole } from 'src/constant';
+import { IOnBoarding } from '../database/entity/onBording';
+import { MessageResponse } from './interface';
 
 @ApiTags('users')
 @Controller('user')
@@ -111,7 +114,7 @@ export class UserController {
     return this.userService.webLogin(body);
   }
 
-  @Post('/onbording')
+  @Post('/onboarding')
   @ApiOperation({ summary: 'Add onboarding for driver' })
   @ApiResponse({
     status: 201,
@@ -125,7 +128,39 @@ export class UserController {
   async userOnboarding(
     @Req() req: any,
     @Body() body: OnboardingDto,
-  ): Promise<any> {
+  ): Promise<MessageResponse> {
     return this.userService.addOnBording(body, req.user.id);
+  }
+
+  @Get('/onboarding')
+  @ApiOperation({ summary: 'Driver or Dispatcher get his own onboarding' })
+  @ApiResponse({
+    status: 200,
+    description: 'Driver get his own onboarding',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input, object invalid.' })
+  @ApiBearerAuth('access-token') // Use the security scheme name defined in DocumentBuilder
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.Driver, UserRole.Dispatcher)
+  async getUserOnboarding(@Req() req: any): Promise<IOnBoarding> {
+    return this.userService.getOnBoarding(req.user.id);
+  }
+
+  @Put('/onboarding')
+  @ApiOperation({ summary: 'This api is use to update onboarding' })
+  @ApiResponse({
+    status: 201,
+    description: 'User has successfully update onboarding',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input, object invalid.' })
+  @ApiBearerAuth('access-token') // Use the security scheme name defined in DocumentBuilder
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.Driver, UserRole.Dispatcher)
+  @UsePipes(new ValidationPipe())
+  async updateOnBording(
+    @Req() req: any,
+    @Body() body: UpdateOnboardingDto,
+  ): Promise<MessageResponse> {
+    return this.userService.updateOnboarding(body, req.user.id);
   }
 }

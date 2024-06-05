@@ -20,9 +20,10 @@ import { UtilsService } from '../utils/utils.service';
 import { CompanyDetailsService } from './company-details/company-details.service';
 import { RabbitMqService } from '../rabbit-mq/rabbit-mq.service';
 import { AuthService } from '../auth/auth.service';
-import { LoginResponse } from './interface';
-import { OnboardingDto } from './dto/onbording.dto';
+import { LoginResponse, MessageResponse } from './interface';
+import { OnboardingDto, UpdateOnboardingDto } from './dto/onbording.dto';
 import { OnbordingService } from './onbording/onbording.service';
+import { IOnBoarding } from '../database/entity/onBording';
 
 @Injectable()
 export class UserService {
@@ -32,7 +33,7 @@ export class UserService {
     private readonly companyDetailService: CompanyDetailsService,
     private readonly rabbitMQService: RabbitMqService,
     private readonly authService: AuthService,
-    private readonly onbordingService: OnbordingService,
+    private readonly onboardingService: OnbordingService,
   ) {}
   async webSignup(data: WebSignUpDto): Promise<IUser> {
     try {
@@ -382,7 +383,10 @@ export class UserService {
     }
   }
 
-  async addOnBording(data: OnboardingDto, userId: string): Promise<any> {
+  async addOnBording(
+    data: OnboardingDto,
+    userId: string,
+  ): Promise<MessageResponse> {
     try {
       const user = await this.userRepo.findOne({
         where: { id: userId },
@@ -392,10 +396,53 @@ export class UserService {
       if (!user) {
         throw new HttpException('User not found.', HttpStatus.CONFLICT);
       }
-      await this.onbordingService.addOnBording(data, userId);
+      await this.onboardingService.addOnBoarding(data, userId);
       user.onBoardingVerified = OnBoardingStatus.Pending;
       await this.userRepo.save(user);
       return { message: 'Onbording need approval' };
+    } catch (err) {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new HttpException(
+        'Internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async getOnBoarding(userId: string): Promise<IOnBoarding> {
+    try {
+      const onboarding = await this.onboardingService.getOnboarding(userId);
+      return onboarding;
+    } catch (err) {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new HttpException(
+        'Internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async updateOnboarding(
+    data: UpdateOnboardingDto,
+    userId: string,
+  ): Promise<MessageResponse> {
+    try {
+      const user = await this.userRepo.findOne({
+        where: { id: userId },
+        select: { password: false },
+      });
+
+      if (!user) {
+        throw new HttpException('User not found.', HttpStatus.CONFLICT);
+      }
+      await this.onboardingService.updateOnboarding(data, userId);
+      user.onBoardingVerified = OnBoardingStatus.Pending;
+      await this.userRepo.save(user);
+      return { message: 'Onbording updated need admin approval' };
     } catch (err) {
       if (err instanceof HttpException) {
         throw err;

@@ -13,3 +13,7 @@ export interface LoginResponse {
   token: string;
   onboarding?: any; // Replace `any` with the actual type if you have it
 }
+
+export interface MessageResponse {
+  message: string;
+}
