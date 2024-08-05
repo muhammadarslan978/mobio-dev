@@ -1,4 +1,5 @@
 version: '3.8'
+
 services:
   postgres:
     image: postgres:13
@@ -10,6 +11,13 @@ services:
       - '5433:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U nestjs']
+      interval: 20s
+      timeout: 10s
+      retries: 10
+    networks:
+      - app-network
 
   rabbitmq:
     image: 'rabbitmq:3-management'
@@ -19,6 +27,37 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: rabbitmq
       RABBITMQ_DEFAULT_PASS: rabbitmq
+    networks:
+      - app-network
+
+  mobio-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - POSTGRES_USER=nestjs
+      - POSTGRES_PASSWORD=nestjs
+      - POSTGRES_DB=nestjs
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=nestjs
+      - DB_PASSWORD=nestjs
+      - DB_NAME=nestjs
+      - PORT=3000
+      - RABBITMQ_URL=amqp://rabbitmq:rabbitmq@rabbitmq:5672
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   pgdata:

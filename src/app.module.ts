@@ -20,6 +20,7 @@ import { AuthModule } from './modules/auth/auth.module';
     UserModule,
     RabbitMqModule,
     AuthModule,
+    ConfigModule,
   ],
   controllers: [],
   providers: [UtilsService],

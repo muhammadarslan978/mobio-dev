@@ -1,18 +1,26 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
 import { RabbitMqService } from './rabbit-mq.service';
 
 @Module({
   imports: [
-    ClientsModule.register([
+    ConfigModule.forRoot({
+      isGlobal: true, // This makes the ConfigModule available globally
+    }),
+    ClientsModule.registerAsync([
       {
         name: 'rabbit-mq-module',
-        transport: Transport.RMQ,
-        options: {
-          urls: ['amqp://rabbitmq:rabbitmq@localhost:5672'],
-          queue: 'rabbit-mq-nest-js',
-        },
+        imports: [ConfigModule],
+        useFactory: async (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('RABBITMQ_URL')],
+            queue: 'rabbit-mq-nest-js',
+          },
+        }),
+        inject: [ConfigService],
       },
     ]),
   ],

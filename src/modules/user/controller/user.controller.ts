@@ -21,16 +21,16 @@ import {
   MobileSignupDto,
   MobileLoginDto,
   WebLoginDto,
-} from './dto/user.dto';
-import { UserService } from './user.service';
-import { IUser } from '../database/entity/user';
-import { OnboardingDto, UpdateOnboardingDto } from './dto/onbording.dto';
-import { Roles } from '../auth/roles.decorator';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
+} from '../dto/user.dto';
+import { UserService } from '../service/user.service';
+import { IUser } from '../../database/entity/user';
+import { OnboardingDto, UpdateOnboardingDto } from '../dto/onbording.dto';
+import { Roles } from '../../auth/roles.decorator';
+import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
+import { RolesGuard } from '../../auth/roles.guard';
 import { UserRole } from 'src/constant';
-import { IOnBoarding } from '../database/entity/onBording';
-import { MessageResponse } from './interface';
+import { IOnBoarding } from '../../database/entity/onBording';
+import { MessageResponse } from '../interface/interface';
 
 @ApiTags('users')
 @Controller('user')

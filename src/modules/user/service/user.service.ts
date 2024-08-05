@@ -1,5 +1,14 @@
 import { Inject, Injectable, HttpException, HttpStatus } from '@nestjs/common';
 
+import { Repository } from 'typeorm';
+
+import { UtilsService } from '../../utils/utils.service';
+import { CompanyDetailsService } from '../company-details/company-details.service';
+import { RabbitMqService } from '../../rabbit-mq/rabbit-mq.service';
+import { AuthService } from '../../auth/auth.service';
+import { LoginResponse, MessageResponse } from '../interface/interface';
+import { OnboardingDto, UpdateOnboardingDto } from '../dto/onbording.dto';
+import { OnbordingService } from '../onbording/onbording.service';
 import {
   EVENT_ENUM,
   OnBoardingStatus,
@@ -7,23 +16,15 @@ import {
   REPOSITORY,
   SUB_TYPE,
   UserRole,
-} from '../../constant/index';
-import { Repository } from 'typeorm';
-import { IUser, User } from '../database/entity/user';
+} from '../../../constant';
+import { IUser, User } from '../../database/entity/user';
 import {
   MobileLoginDto,
   MobileSignupDto,
   WebLoginDto,
   WebSignUpDto,
-} from './dto/user.dto';
-import { UtilsService } from '../utils/utils.service';
-import { CompanyDetailsService } from './company-details/company-details.service';
-import { RabbitMqService } from '../rabbit-mq/rabbit-mq.service';
-import { AuthService } from '../auth/auth.service';
-import { LoginResponse, MessageResponse } from './interface';
-import { OnboardingDto, UpdateOnboardingDto } from './dto/onbording.dto';
-import { OnbordingService } from './onbording/onbording.service';
-import { IOnBoarding } from '../database/entity/onBording';
+} from '../dto/user.dto';
+import { IOnBoarding } from 'src/modules/database/entity/onBording';
 
 @Injectable()
 export class UserService {

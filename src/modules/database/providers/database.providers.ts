@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { INJECTION_TOKEN, REPOSITORY } from '../../../constant/index';
 import { DataSource, Repository } from 'typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
@@ -8,15 +9,27 @@ import { OnBoarding } from '../entity/onBording';
 export const databaseProviders = [
   {
     provide: INJECTION_TOKEN.DATA_SOURCE,
-    useFactory: async (): Promise<DataSource> => {
+    useFactory: async (configService: ConfigService): Promise<DataSource> => {
       try {
+        const databaseName = configService.get('POSTGRES_DB');
+        const postgresUser = configService.get('POSTGRES_USER');
+        const postgresPassword = configService.get('POSTGRES_PASSWORD');
+        const dbHost = configService.get('DB_HOST');
+        const dbPort = configService.get('DB_PORT');
+
+        console.log('DATABASE_NAME:', databaseName);
+        console.log('POSTGRES_USER:', postgresUser);
+        console.log('POSTGRES_PASSWORD:', postgresPassword);
+        console.log('DB_HOST:', dbHost);
+        console.log('DB_PORT:', dbPort);
+
         const ormconfig: PostgresConnectionOptions = {
-          database: 'nestjs',
+          database: databaseName,
           type: 'postgres',
-          username: 'nestjs',
-          password: 'nestjs',
-          host: 'localhost',
-          port: 5433,
+          username: postgresUser,
+          password: postgresPassword,
+          host: dbHost,
+          port: dbPort,
           logging: ['error', 'migration', 'schema', 'warn'],
           synchronize: false,
           migrationsRun: true,
@@ -36,6 +49,7 @@ export const databaseProviders = [
         throw err;
       }
     },
+    inject: [ConfigService],
   },
   {
     provide: REPOSITORY.USER_REPOSITORY,

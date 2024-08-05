@@ -1,0 +1,15 @@
+Prerequisites
+AWS account
+Docker installed locally
+AWS CLI installed and configured
+Terraform (optional, for infrastructure as code)
+
+
+Step 1: Dockerize Your NestJS Application
+
+Build the Docker image:
+docker build -t nestjs-app .
+
+Run the Docker image locally to test:
+docker run -p 3000:3000 nestjs-app
+
