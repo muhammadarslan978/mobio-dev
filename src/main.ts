@@ -9,6 +9,12 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalFilters(new HttpExceptionFilter());
 
+  app.enableCors({
+    origin: '*', // Adjust this according to your needs
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Accept',
+  });
+
   const config = new DocumentBuilder()
     .setTitle('API Documentation')
     .setDescription('API description')

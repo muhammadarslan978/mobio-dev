@@ -7,6 +7,7 @@ import { UserModule } from './modules/user/user.module';
 import { UtilsService } from './modules/utils/utils.service';
 import { RabbitMqModule } from './modules/rabbit-mq/rabbit-mq.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { HealthModule } from './modules/health/health.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AuthModule } from './modules/auth/auth.module';
     RabbitMqModule,
     AuthModule,
     ConfigModule,
+    HealthModule,
   ],
   controllers: [],
   providers: [UtilsService],
